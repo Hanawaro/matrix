@@ -1,158 +1,161 @@
+// Стандартные библиотеки
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// Библиотека с матричными операциями
 #include "matrix.h"
+// Библиотека для работы с инпутами
+#include "input.h"
 
+// Константы для главных команд
 #define C_HELP "help"
 #define C_OPREDELITEL "opredelitel"
 #define C_POWER "power"
 #define C_RANG "rang"
 #define C_EXIT "shutdown"
 
+// Команды для подконсольных приложений
 #define FC_EXIT "exit"
 
-int getCommand(char *string);
-int checkString(char *string, int *number);
+// Функции (сами подконсольные приложения)
 void helpShow(void);
 int opredelitelStart(void);
 int powerStart(void);
 int rangStart(void);
 
-int getOpredelitelLine(char * line);
-
+// Мейн функция
 int main(void) {
+    // status - индификатор ввода
+    // space - для нормального отображения "~/"
+    // command - инпут пользователя
     int status = 1,
         space = 0;
     char *command = (char *) malloc(sizeof(char));
-    fprintf(stdout, " Приветствую вас в matrix\n");
+    // Приветствие
+    fprintf(stdout, "Приветствую вас в Matrix\n");
+    // Ввод
     do {
-        fprintf(stdout, "~/ ");
+        // ~/
+        fprintf(stdout, "\e[0;32m~/ \033[0m");
         space = 0;
-        int c;
+        // Ввод от пользователя
         if ( getCommand(command) )
             space = 1;
-
+        // Расшифровка ввода
+        // Введена просто новая строка
         if ( space );
+        // Введена пустая строка
         else if ( strlen(command) == 0 )
             fprintf(stdout, "\n");
+        // Введена команды выхода
         else if (!strcmp(command, C_EXIT))
             status = 0;
+        // Введена команды помощи
         else if (!strcmp(command, C_HELP))
             helpShow();
+        // Введена команда нахождения определителя
         else if (!strcmp(command, C_OPREDELITEL))
             opredelitelStart();
+        // Введена команда нахождения произведения матриц
         else if (!strcmp(command, C_POWER))
             powerStart();
+        // Введена команда нахождения ранга матрицы
         else if (!strcmp(command, C_RANG))
             rangStart();
+        // Введена неизвестная команда
         else
-            fprintf(stdout, " Неизвестная комманда\nВведите help, чтобы увидеть список команд\n");
+            fprintf(stdout, "Неизвестная комманда\nВведите help, чтобы увидеть список команд\n");
     } while (status);
-
-    fprintf(stdout, " Спасибо за использование программы.\n");
-
+    // Благодарим за использование программы
+    fprintf(stdout, "Спасибо за использование программы.\n");
+    // Освобождаем память
     free(command);
-    
+    // Завершаем программу
     return 0;
 }
 
-int getCommand(char *string) {
-    int N = 0;
-    while ( (string[N] = getchar()) != EOF && string[N] != '\n' && string[N] != '\0') {
-        N++;
-        string = (char *) realloc(string, sizeof(char) * N);
-    }
-    if (string[N] == '\n' && N == 0) {
-        string[N] = '\0';
-        return 1;
-    } else {
-        string[N] = '\0';
-        return 0;
-    }
-}
-
-int checkString(char *string, int* number) {
-    int N = 0,
-        power = 1,
-        num = 0,
-        status = 0;
-    while (string[N] != '\0') {
-        if (string[N] >= '0' && string[N] <= '9') {
-            *number += power*((int) (string[N] - '0'));
-            power *= 10;
-            status = 1;
-        } else 
-            break;
-        N++;
-    }
-    if (status)
-        return 1;
-    else 
-        return 0;
-}
-
+// ФУНКЦИЯ - помощь
 void helpShow(void) {
-    fprintf(stdout, " Список команд: \n");
-    fprintf(stdout, "  -- %s\n", C_OPREDELITEL);
-    fprintf(stdout, "  -- %s\n", C_POWER);
-    fprintf(stdout, "  -- %s\n", C_RANG);
-    fprintf(stdout, "  -- %s\n", C_EXIT);
+    fprintf(stdout, "Список команд: \n");
+    fprintf(stdout, " -- %s\n", C_OPREDELITEL);
+    fprintf(stdout, " -- %s\n", C_POWER);
+    fprintf(stdout, " -- %s\n", C_RANG);
+    fprintf(stdout, " -- %s\n", C_EXIT);
 }
 
+// ФУНКЦИЯ - нахождение определителя
 int opredelitelStart(void) {
-    // Заменить int на double
-    int amount = 0, status = 1;
+    // amount - порядок матрицы
+    // status - флаг для ввода
+    // matrix - сама матрица
+    // data - строка ввода пользователя
+    int amount = 0, 
+        status = 1;
+    double** matrix;
     char *data = (char *) malloc(sizeof(char));
-	int** matrix;
-    
-	fprintf(stdout, " Введите порядок матрицы, для нахождения её определителя: ");
+    // Просим ввести ранг матрицы
+	fprintf(stdout, "Введите порядок матрицы, для нахождения её определителя: ");
+    // Читаем ранг матрицы
 	do {
+        // Читаем стркоу
         getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
         if (!strcmp(data, FC_EXIT))
             return 0;
+        // Проверяем на корректность входные данные
         if ( checkString(data, &amount) ) {
             if (amount <= 0)
-                printf(" Некорректные данные...\n");
+                printf("Некорректные данные...\n");
             else 
                 status = 0;
-        } else {
-            printf(" Некорректые данные...\n");
+        } else 
+            printf("Некорректые данные...\n");
+	} while (status);
+
+    // Создаём первое измерение матрицы
+	matrix = (double**)malloc(amount * sizeof(double*));
+    // Освобождаем память для строки
+    free(data);
+    // И создаём новую строку пользователя
+    data = (char *) malloc(sizeof(char));
+
+    // Просим ввести саму матрицу
+	fprintf(stdout, "Введите элементы матрицы:\n");
+    // Читаем матрицу
+    // Проходиммя по всем строкам
+	for (int i = 0; i < amount; i++) {
+        // Создаём столбцы для каждой строки
+		matrix[i] = (double*)malloc(amount * sizeof(double));
+        // Для красивого ввода
+        printf(" ");
+        // Читаем данные
+        int stat = getOpredelitelLine(data, matrix, i, amount);
+        // Если не введена команда выхода,
+        if (stat == 3) 
+            return 0;
+        // Проверяем на корректность
+        else if (stat == 1) {
+            printf("Некорректные данные...\n");
+            i--;
         }
-	} while (status);
-
-	fprintf(stdout, " Введите элементы матрицы:\n");
-
-	matrix = (int**)malloc(amount * sizeof(int*));
-
-    // Сделать ввод чего угодно (нужна функция getLineOpredelitel() )
-    do {
-		status = 0;
-		for (int i = 0; i < amount; i++) {
-			matrix[i] = (int*)malloc(amount * sizeof(int));
-            printf(" ");
-			for (int j = 0; j < amount; j++)
-				if (scanf("%d", &matrix[i][j]) != 1) {
-					status = 1;
-				}
-		}
-	} while (status);
-
-	fprintf(stdout, " Определитель матрицы равен: %d\n", findOpedelitel(matrix, amount) );
-
+	}
+    // Находим определитель матрицы и выводим его
+	fprintf(stdout, "Определитель матрицы равен: %.3lf\n", findOpedelitel(matrix, amount) );
+    // Освобождаем память
 	for (int i = 0; i < amount; i++)
 		free(matrix[i]);
 	free(matrix);
     free(data);
-
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF && c != '\0') { }
-
+    // Завершаем работу подпрограммы
     return 0;
 }
+
+// ФУНКЦИЯ - произведение матриц
 int powerStart(void) {
     // Поиск произведения
     return 0;
 }
+// ФУНКЦИЯ - ранг матрицы
 int rangStart(void) {
     // Поиск ранга
     return 0;

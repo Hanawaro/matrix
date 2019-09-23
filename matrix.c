@@ -1,10 +1,12 @@
+// Подключаем стандартные библиотке
 #include <stdio.h>
 #include <stdlib.h>
+// Подключение заголовочных файлов matrix
 #include "matrix.h"
 
 // Возвращает определитель матрицы matrix
 // Если результат -1 - то что-то пошло не так
-int findOpedelitel(int **matrix, int size) {
+double findOpedelitel(double **matrix, int size) {
 	// Проверяем корректность порядка матрицы
 	if (size < 1) 
 		return -1;
@@ -23,18 +25,19 @@ int findOpedelitel(int **matrix, int size) {
 		// opredelitel - само значение определителя
 		// aI - номер строки минора
 		// aJ - номер столбца минора
-		int opredelitel = 0, aI = 0, aJ = 0;
+		double opredelitel = 0; 
+		int aI = 0, aJ = 0;
 		// Создаём матрицу меньшего порядка для минора 
-		int **array = (int**)malloc( (size - 1) * sizeof(int*));
+		double **array = (double**)malloc( (size - 1) * sizeof(double*));
 		// Проверяем дала ли система память под массив (матрицу)
-		if ( array = NULL )
+		if ( array == NULL )
 			return -1;
 		// Перебираем столбцы и находим миноры для первых элементов ( i - номер столбца )
 		for (int i = 0; i < size - 1; i++) {
 			// Добавляем второе измерение для матрицы меньшего порядка
-			array[i] = (int*)malloc((size - 1) * sizeof(int));
+			array[i] = (double*)malloc((size - 1) * sizeof(double));
 			// Проверяем дала ли система память под второе измерение массива (матрицы)
-			if ( array[i] = NULL )
+			if ( array[i] == NULL )
 				return -1;
 			// Перебираем строки ( j - номре строки)
 			for (int j = 0; j < size - 1; j++)
@@ -43,7 +46,7 @@ int findOpedelitel(int **matrix, int size) {
 		}
 
 		// ОСНОВНАЯ ЧАСТЬ КОДА
-
+		
 		// Перебираем элементы первой строки начальной матрицы (91, 02, ..., 0i)
 		// Вычёркиваем первую строку
 		for (int i = 0; i < size; i++) {
