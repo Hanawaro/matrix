@@ -14,11 +14,14 @@ int getCommand(char *string) {
         N++;
         string = (char *) realloc(string, sizeof(char) * N);
     }
-    string[N] = '\0';
-    if (string[N] == '\n' && N == 0)
+    
+    if (string[N] == '\n' && N == 0) {
+        string[N] = '\0';
         return 1;
-    else
+    } else {
+        string[N] = '\0';
         return 0;
+    }
 }
 // Получить данные для i-ой строки матрицы matrix
 int getOpredelitelLine(char * line, double **matrix, int i, int amountOfElements) {

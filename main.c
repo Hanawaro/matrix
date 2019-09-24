@@ -93,10 +93,10 @@ int opredelitelStart(void) {
         status = 1;
     double** matrix;
     char *data = (char *) malloc(sizeof(char));
-    // Просим ввести ранг матрицы
-	fprintf(stdout, "Введите порядок матрицы, для нахождения её определителя: ");
     // Читаем ранг матрицы
 	do {
+        // Просим ввести ранг матрицы
+	    fprintf(stdout, "Введите порядок матрицы, для нахождения её определителя: ");
         // Читаем стркоу
         getCommand(data);
         // Если в ней нет команды выхода, то продолжаем
@@ -191,14 +191,6 @@ int powerStart(void) {
             printf("Некорректные данные...\n");
     } while (status);
 
-    // for (int i = 0; i < fsizey; i++) {
-    //     firstMatrix[i] = (double *) malloc( fsizex*sizeof(double));
-    //     if ( firstMatrix[i] == NULL ) {
-    //         printf("Что-то пошло не так\n");
-    //         return -1;
-    //     }
-    // }
-
     for (int i = 0; i < fsizey; i++) {
         // Создаём столбцы для каждой строки
 		firstMatrix[i] = (double*)malloc(fsizex * sizeof(double));
@@ -249,13 +241,6 @@ int powerStart(void) {
     } while (status);
 
     printf("Введите элементы второй матрицы:\n");
-    // for (int i = 0; i < ssizey; i++) {
-    //     secondMatrix[i] = (double *) malloc( ssizex*sizeof(double));
-    //     if (secondMatrix[i] == NULL) {
-    //         printf("Что-то пошло не так\n");
-    //         return -1;
-    //     }
-    // }
 
     for (int i = 0; i < ssizey; i++) {
         // Создаём столбцы для каждой строки
@@ -273,9 +258,7 @@ int powerStart(void) {
             i--;
         }
 	}
-        
 
-    printf("Вычисляю...\n");
     double **matrix = power(firstMatrix, fsizey, fsizex, secondMatrix, ssizey, ssizex);
     
     if (matrix) {
