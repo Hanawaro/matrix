@@ -37,6 +37,8 @@ int getOpredelitelLine(char * line, double **matrix, int i, int amountOfElements
         sign = 1;
     // Получаем строку пользователя
     getCommand(line);
+    if (strlen(line) == 0)
+        return 4;
     // Проверяем, нет ли команды выхода
     if (!strcmp(line, C_EXIT))
         return 3;

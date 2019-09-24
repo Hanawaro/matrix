@@ -66,8 +66,6 @@ int main(void) {
         else
             fprintf(stdout, "Неизвестная комманда\nВведите help, чтобы увидеть список команд\n");
     } while (status);
-    // Благодарим за использование программы
-    fprintf(stdout, "Спасибо за использование программы.\n");
     // Освобождаем память
     free(command);
     // Завершаем программу
@@ -134,7 +132,7 @@ int opredelitelStart(void) {
         if (stat == 3) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1) {
+        else if (stat == 1 || stat == 4) {
             printf("Некорректные данные...\n");
             i--;
         }
@@ -175,7 +173,18 @@ int powerStart(void) {
             return 0;
         // Проверяем на корректность входные данные
         checkString(data, &fsizey);
-     
+
+        if (fsizey > 0)
+            status = 0;
+        else
+            printf("Некорректные данные...\n");
+    } while (status);
+
+    status = 1;
+    free(data);
+    data = (char *) malloc(sizeof(char));
+
+    do {
         printf("Введите количество столбцов первой матрицы: ");
         // Читаем стркоу
         getCommand(data);
@@ -185,7 +194,7 @@ int powerStart(void) {
         // Проверяем на корректность входные данные
         checkString(data, &fsizex);
 
-        if (fsizey > 0 && fsizex > 0)
+        if (fsizex > 0)
             status = 0;
         else
             printf("Некорректные данные...\n");
@@ -202,18 +211,17 @@ int powerStart(void) {
         if (stat == 3) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1) {
+        else if (stat == 1 || stat == 4) {
             printf("Некорректные данные...\n");
             i--;
         }
 	}
 
-    free(data);
-    data = (char *) malloc(sizeof(char));
-
     // вторая матрица
 
     status = 1;
+    free(data);
+    data = (char *) malloc(sizeof(char));
 
     do {
         printf("Введите количество строк второй матрицы: ");
@@ -224,7 +232,18 @@ int powerStart(void) {
             return 0;
         // Проверяем на корректность входные данные
         checkString(data, &ssizey);
-     
+
+        if (ssizey > 0)
+            status = 0;
+        else
+            printf("Некорректные данные...\n");
+    } while (status);
+
+    status = 1;
+    free(data);
+    data = (char *) malloc(sizeof(char));
+    
+    do {
         printf("Введите количество столбцов второй матрицы: ");
         // Читаем стркоу
         getCommand(data);
@@ -234,7 +253,7 @@ int powerStart(void) {
         // Проверяем на корректность входные данные
         checkString(data, &ssizex);
 
-        if (ssizey > 0 && ssizex > 0)
+        if (ssizex > 0)
             status = 0;
         else
             printf("Некорректные данные...\n");
@@ -253,7 +272,7 @@ int powerStart(void) {
         if (stat == 3) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1) {
+        else if (stat == 1 || stat == 4) {
             printf("Некорректные данные...\n");
             i--;
         }
@@ -286,6 +305,78 @@ int powerStart(void) {
 }
 // ФУНКЦИЯ - ранг матрицы
 int rangStart(void) {
-    // Поиск ранга
-    return 0;
+    int amountY = 0,
+        amountX = 0, 
+        status = 1;
+    char *data = (char *) malloc(sizeof(char));
+	double** matrix;
+
+	do {
+        printf("Введите количество строк матрицы, для нахождения её ранга: ");
+		// Читаем стркоу
+        getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
+        if (!strcmp(data, FC_EXIT))
+            return 0;
+        // Проверяем на корректность входные данные
+        if ( checkString(data, &amountY) ) 
+            if (amountY > 0)
+                status = 0;
+            else
+                printf("Некорректные данные...\n");
+        else
+            printf("Некорректные данные...\n");
+	} while (status);
+
+    status = 1;
+    free(data);
+    data = (char *) malloc(sizeof(char));
+
+    do {
+        printf("Введите количество столбцов матрицы, для нахождения её ранга: ");
+		// Читаем стркоу
+        getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
+        if (!strcmp(data, FC_EXIT))
+            return 0;
+        // Проверяем на корректность входные данные
+        if ( checkString(data, &amountX) )
+            if (amountX > 0)
+                status = 0;
+            else
+                printf("Некорректные данные...\n");
+        else
+            printf("Некорректные данные...\n");
+	} while (status);
+
+    free(data);
+    data = (char *) malloc(sizeof(char));
+    matrix = (double **) malloc(amountY * sizeof(double *));
+    
+    printf("Введите элементы матрицы:\n");
+	for (int i = 0; i < amountY; i++) {
+        // Создаём столбцы для каждой строки
+		matrix[i] = (double*)malloc(amountX * sizeof(double));
+        // Для красивого ввода
+        printf(" ");
+        // Читаем данные
+        int stat = getOpredelitelLine(data, matrix, i, amountX);
+        // Если не введена команда выхода,
+        if (stat == 3) 
+            return 0;
+        // Проверяем на корректность
+        else if (stat == 1 || stat == 4) {
+            printf("Некорректные данные...\n");
+            i--;
+        }
+	}
+
+    int rang = findRang(matrix, amountY, amountX);
+    printf("Ранг матрицы равен %d\n", rang);
+
+    for (int i = 0; i < amountY; i++)
+		free(matrix[i]);
+	free(matrix);
+    free(data);
+	return 0;
 }

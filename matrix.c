@@ -92,16 +92,16 @@ double findOpedelitel(double **matrix, int size) {
 
 // Возвращает ранг матрицы matrix
 // Если результат -1 - то что-то пошло не так
-int findRand(int **matrix, int sizeY, int sizeX) {
+int findRang(double **matrix, int sizeY, int sizeX) {
 	// Смотрим, корректные ли входные данные
-    if (sizeY < 1 || sizeX < 0)
+    if (sizeY <= 0 || sizeX <= 0)
 		return -1;
 	// Если в матрице всего одна строка, считаем ранг ручками
 	else if (sizeY == 1) {
 		// flag - показывает, встретился ли нам хоть 1 НЕ нуль
         int flag = 1;
         for ( int i = 0; i < sizeX; i++)
-            if ( matrix[sizeY - 1][i] != 0)
+            if ( matrix[sizeY - 1][i] != 0.0)
                 flag = 0;
 		// Если были одни лишь нули, то ранг равен 0
 		if ( flag )
@@ -122,10 +122,10 @@ int findRand(int **matrix, int sizeY, int sizeX) {
 			for (int j = 1; j <= iteration; j++) {
 				// Запоминаем на что нужно умножить рабочую строку (forSecond) и
 				// на что нужно умножить строку, которая работает с нашей рабочей строкой (forFirst)
-                int forFirst = matrix[lastLine][vertical],
-                    forSecond = matrix[newI][vertical];
+                double forFirst = matrix[lastLine][vertical],
+                       forSecond = matrix[newI][vertical];
 				// Вычитаем эти 2 строки друг из друга и записываем результат в рабочую строку
-                for (int k = 0; k < sizeX; k++) 
+                for (int k = 0; k < sizeX; k++)
                     matrix[lastLine][k] = matrix[newI][k]*forFirst - matrix[lastLine][k]*forSecond; 
 				// Увеличиваем индекс столбца (по ступенькам)
                 vertical++;
@@ -149,7 +149,7 @@ int findRand(int **matrix, int sizeY, int sizeX) {
 			// Проходимся по столбцам матрицы
             for ( int k = 0; k < sizeX; k++) {
 				// Если есть НЕ нуль, то убираем флаг
-                if ( matrix[i][k] != 0 )
+                if ( matrix[i][k] != 0.0 )
                     flag = 0;
             }
 			// Если нулевая строка
