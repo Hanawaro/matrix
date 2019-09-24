@@ -9,8 +9,8 @@
 
 // Константы для главных команд
 #define C_HELP "help"
-#define C_OPREDELITEL "opredelitel"
-#define C_POWER "power"
+#define C_OPREDELITEL "det"
+#define C_POWER "pow"
 #define C_RANG "rang"
 #define C_EXIT "shutdown"
 
@@ -152,7 +152,153 @@ int opredelitelStart(void) {
 
 // ФУНКЦИЯ - произведение матриц
 int powerStart(void) {
-    // Поиск произведения
+    int fsizey = 0, 
+        fsizex = 0, 
+        ssizey = 0, 
+        ssizex = 0, 
+        status = 1;
+    double **firstMatrix = (double**) malloc( fsizey * sizeof(double *));
+    double **secondMatrix = (double**) malloc( ssizey * sizeof(double *));
+    char *data = (char *) malloc(sizeof(char));
+    
+    if ( firstMatrix == NULL || secondMatrix == NULL ) {
+        printf("Что-то пошло не так\n");
+        return -1;
+    }
+
+    do {
+        printf("Введите количество строк первой матрицы: ");
+        // Читаем стркоу
+        getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
+        if (!strcmp(data, FC_EXIT))
+            return 0;
+        // Проверяем на корректность входные данные
+        checkString(data, &fsizey);
+     
+        printf("Введите количество столбцов первой матрицы: ");
+        // Читаем стркоу
+        getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
+        if (!strcmp(data, FC_EXIT))
+            return 0;
+        // Проверяем на корректность входные данные
+        checkString(data, &fsizex);
+
+        if (fsizey > 0 && fsizex > 0)
+            status = 0;
+        else
+            printf("Некорректные данные...\n");
+    } while (status);
+
+    // for (int i = 0; i < fsizey; i++) {
+    //     firstMatrix[i] = (double *) malloc( fsizex*sizeof(double));
+    //     if ( firstMatrix[i] == NULL ) {
+    //         printf("Что-то пошло не так\n");
+    //         return -1;
+    //     }
+    // }
+
+    for (int i = 0; i < fsizey; i++) {
+        // Создаём столбцы для каждой строки
+		firstMatrix[i] = (double*)malloc(fsizex * sizeof(double));
+        // Для красивого ввода
+        printf(" ");
+        // Читаем данные
+        int stat = getOpredelitelLine(data, firstMatrix, i, fsizex);
+        // Если не введена команда выхода,
+        if (stat == 3) 
+            return 0;
+        // Проверяем на корректность
+        else if (stat == 1) {
+            printf("Некорректные данные...\n");
+            i--;
+        }
+	}
+
+    free(data);
+    data = (char *) malloc(sizeof(char));
+
+    // вторая матрица
+
+    status = 1;
+
+    do {
+        printf("Введите количество строк второй матрицы: ");
+        // Читаем стркоу
+        getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
+        if (!strcmp(data, FC_EXIT))
+            return 0;
+        // Проверяем на корректность входные данные
+        checkString(data, &ssizey);
+     
+        printf("Введите количество столбцов второй матрицы: ");
+        // Читаем стркоу
+        getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
+        if (!strcmp(data, FC_EXIT))
+            return 0;
+        // Проверяем на корректность входные данные
+        checkString(data, &ssizex);
+
+        if (ssizey > 0 && ssizex > 0)
+            status = 0;
+        else
+            printf("Некорректные данные...\n");
+    } while (status);
+
+    printf("Введите элементы второй матрицы:\n");
+    // for (int i = 0; i < ssizey; i++) {
+    //     secondMatrix[i] = (double *) malloc( ssizex*sizeof(double));
+    //     if (secondMatrix[i] == NULL) {
+    //         printf("Что-то пошло не так\n");
+    //         return -1;
+    //     }
+    // }
+
+    for (int i = 0; i < ssizey; i++) {
+        // Создаём столбцы для каждой строки
+		secondMatrix[i] = (double*)malloc(ssizex * sizeof(double));
+        // Для красивого ввода
+        printf(" ");
+        // Читаем данные
+        int stat = getOpredelitelLine(data, secondMatrix, i, ssizex);
+        // Если не введена команда выхода,
+        if (stat == 3) 
+            return 0;
+        // Проверяем на корректность
+        else if (stat == 1) {
+            printf("Некорректные данные...\n");
+            i--;
+        }
+	}
+        
+
+    printf("Вычисляю...\n");
+    double **matrix = power(firstMatrix, fsizey, fsizex, secondMatrix, ssizey, ssizex);
+    
+    if (matrix) {
+        printf("Результат произведения:\n\n");
+        for ( int i = 0; i < fsizey; i++ ) {
+            printf("\t");
+            for ( int j = 0; j < ssizex; j++ )
+                printf("%.3lf ", matrix[i][j]); 
+            printf("\n");
+        }
+        printf("\nСпасибо за использование программы.\n");
+    } else 
+        printf("Некорректные размеры матриц\n");
+
+    for (int i = 0; i < fsizey; i++)
+        free(firstMatrix[i]);
+    free(firstMatrix);
+
+    for (int i = 0; i < ssizey; i++)
+        free(secondMatrix[i]);
+    free(secondMatrix);
+
+    free(data);
     return 0;
 }
 // ФУНКЦИЯ - ранг матрицы

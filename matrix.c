@@ -168,17 +168,17 @@ int findRand(int **matrix, int sizeY, int sizeX) {
 
 // Возвращает матрицу - результат произведения
 // Если результат 0 - то что-то пошло не так
-int** power(int **firstMatrix,int firstSizeY, int firstSizeX, int **secondMatrix,int secondSizeY, int secondSizeX) {
+double** power(double **firstMatrix,int firstSizeY, int firstSizeX, double **secondMatrix,int secondSizeY, int secondSizeX) {
 	// Смотрим, можно ли вообще найти произведение этих матриц
 	if ( firstSizeX == secondSizeY) {
 		// Создаём новую матрицу
-		int **matrix = (int **) malloc(firstSizeY * sizeof(int*));
+		double **matrix = (double **) malloc(firstSizeY * sizeof(double*));
 		// Проверяем, дала ли система память под новую матрицу
 		if (matrix == NULL)
 			return 0;
 		// Создаём второе измерение матрицы
 		for (int i = 0; i < firstSizeY; i++) {
-			matrix[i] = (int *) malloc( secondSizeX * sizeof(int));
+			matrix[i] = (double *) malloc( secondSizeX * sizeof(double));
 			// Смотрим, дала ли система память под второе измерение матрицы
 			if (matrix[i] == NULL)
 				return 0;
@@ -186,13 +186,13 @@ int** power(int **firstMatrix,int firstSizeY, int firstSizeX, int **secondMatrix
 		// Обнуляем матрицу
 		for (int i = 0; i < firstSizeY; i++)
 			for (int j = 0; j < secondSizeX; j++)
-				matrix[i][j] = 0;
+				matrix[i][j] = 0.0;
 		// Проходимся по строкам первой матрицы
 		for (int i = 0; i < firstSizeY; i++) 
 			// Проходимся по столбцам матриц
 			for (int j = 0; j < firstSizeX; j++) {
 				// Сохраням [i][j] элемент 1 матрицы
-				int tmp = firstMatrix[i][j];
+				double tmp = firstMatrix[i][j];
 				// Проходимся по второй матрице
 				for (int k = 0; k < secondSizeX; k++) 
 					matrix[i][k] += tmp * secondMatrix[j][k];
