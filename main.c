@@ -9,7 +9,7 @@
 
 // Константы для главных команд
 #define C_HELP "help"
-#define C_OPREDELITEL "det"
+#define C_DET "det"
 #define C_POWER "pow"
 #define C_RANG "rang"
 #define C_EXIT "shutdown"
@@ -20,7 +20,7 @@
 
 // Функции (сами подконсольные приложения)
 void helpShow(void);
-int opredelitelStart(void);
+int detStart(void);
 int powerStart(void);
 int rangStart(void);
 int inverse(void);
@@ -33,6 +33,11 @@ int main(void) {
     int status = 1,
         space = 0;
     char *command = (char *) malloc(sizeof(char));
+    // Проверка аллоцирования
+    if (command == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
     // Приветствие
     fprintf(stdout, "Приветствую вас в Matrix\n");
     // Ввод
@@ -41,13 +46,13 @@ int main(void) {
         fprintf(stdout, "\e[0;32m~/ \033[0m");
         space = 0;
         // Ввод от пользователя
-        if ( getCommand(command) )
+        if (getCommand(command))
             space = 1;
         // Расшифровка ввода
         // Введена просто новая строка
-        if ( space );
+        if (space);
         // Введена пустая строка
-        else if ( strlen(command) == 0 )
+        else if (strlen(command) == 0)
             fprintf(stdout, "\n");
         // Введена команды выхода
         else if (!strcmp(command, C_EXIT))
@@ -56,8 +61,8 @@ int main(void) {
         else if (!strcmp(command, C_HELP))
             helpShow();
         // Введена команда нахождения определителя
-        else if (!strcmp(command, C_OPREDELITEL))
-            opredelitelStart();
+        else if (!strcmp(command, C_DET))
+            detStart();
         // Введена команда нахождения произведения матриц
         else if (!strcmp(command, C_POWER))
             powerStart();
@@ -65,12 +70,13 @@ int main(void) {
         else if (!strcmp(command, C_RANG))
             rangStart();
         // Введена команда нахождения обратной матрицы
-        else if (!strcmp(command, C_INVERSE)) {
+        else if (!strcmp(command, C_INVERSE))
             inverse();
         // Введена неизвестная команда
-        } else
+        else
             fprintf(stdout, "Неизвестная комманда\nВведите help, чтобы увидеть список команд\n");
     } while (status);
+    // Благодарим за использование
     fprintf(stdout, "Спасибо за использование программы.\n");
     // Освобождаем память
     free(command);
@@ -81,14 +87,15 @@ int main(void) {
 // ФУНКЦИЯ - помощь
 void helpShow(void) {
     fprintf(stdout, "Список команд: \n");
-    fprintf(stdout, " -- %s\n", C_OPREDELITEL);
+    fprintf(stdout, " -- %s\n", C_DET);
     fprintf(stdout, " -- %s\n", C_POWER);
     fprintf(stdout, " -- %s\n", C_RANG);
+    fprintf(stdout, " -- %s\n", C_INVERSE);
     fprintf(stdout, " -- %s\n", C_EXIT);
 }
 
 // ФУНКЦИЯ - нахождение определителя
-int opredelitelStart(void) {
+int detStart(void) {
     // amount - порядок матрицы
     // status - флаг для ввода
     // matrix - сама матрица
@@ -97,6 +104,11 @@ int opredelitelStart(void) {
         status = 1;
     double** matrix;
     char *data = (char *) malloc(sizeof(char));
+    // Проверка аллоцирования
+    if (data == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
     // Читаем ранг матрицы
 	do {
         // Просим ввести ранг матрицы
@@ -107,21 +119,22 @@ int opredelitelStart(void) {
         if (!strcmp(data, FC_EXIT))
             return 0;
         // Проверяем на корректность входные данные
-        if ( checkString(data, &amount) ) {
+        if ( checkString(data, &amount) ) 
             if (amount <= 0)
-                printf("Некорректные данные...\n");
+                fprintf(stdout, "Некорректные данные...\n");
             else 
                 status = 0;
-        } else 
-            printf("Некорректые данные...\n");
+        else 
+            fprintf(stdout, "Некорректые данные...\n");
 	} while (status);
 
     // Создаём первое измерение матрицы
 	matrix = (double**)malloc(amount * sizeof(double*));
-    // Освобождаем память для строки
-    free(data);
-    // И создаём новую строку пользователя
-    data = (char *) malloc(sizeof(char));
+    // Проверка аллоцирования
+    if (matrix == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
 
     // Просим ввести саму матрицу
 	fprintf(stdout, "Введите элементы матрицы:\n");
@@ -130,21 +143,26 @@ int opredelitelStart(void) {
 	for (int i = 0; i < amount; i++) {
         // Создаём столбцы для каждой строки
 		matrix[i] = (double*)malloc(amount * sizeof(double));
+        // Проверка аллоцирования
+        if (matrix[i] == NULL) {
+            fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+            exit(-1);
+        }
         // Для красивого ввода
-        printf(" ");
+        fprintf(stdout, " ");
         // Читаем данные
-        int stat = getOpredelitelLine(data, matrix, i, amount);
+        int stat = getDetLine(data, matrix, i, amount);
         // Если не введена команда выхода,
-        if (stat == 3) 
+        if (stat == 2) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1 || stat == 4) {
-            printf("Некорректные данные...\n");
+        else if (stat == 1 || stat == 3) {
+            fprintf(stdout, "Некорректные данные...\n");
             i--;
         }
 	}
     // Находим определитель матрицы и выводим его
-	fprintf(stdout, "Определитель матрицы равен: %.3lf\n", findOpedelitel(matrix, amount) );
+	fprintf(stdout, "Определитель матрицы равен: %.3lf\n", findDet(matrix, amount) );
     // Освобождаем память
 	for (int i = 0; i < amount; i++)
 		free(matrix[i]);
@@ -161,12 +179,17 @@ int powerStart(void) {
         ssizey = 0, 
         ssizex = 0, 
         status = 1;
-    double **firstMatrix;
-    double **secondMatrix;
+    double **firstMatrix,
+           **secondMatrix;
     char *data = (char *) malloc(sizeof(char));
+    // Проверка аллоцирования
+    if (data == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
 
     do {
-        printf("Введите количество строк первой матрицы: ");
+        fprintf(stdout, "Введите количество строк первой матрицы: ");
         // Читаем стркоу
         getCommand(data);
         // Если в ней нет команды выхода, то продолжаем
@@ -178,15 +201,13 @@ int powerStart(void) {
         if (fsizey > 0)
             status = 0;
         else
-            printf("Некорректные данные...\n");
+            fprintf(stdout, "Некорректные данные...\n");
     } while (status);
 
     status = 1;
-    free(data);
-    data = (char *) malloc(sizeof(char));
 
     do {
-        printf("Введите количество столбцов первой матрицы: ");
+        fprintf(stdout, "Введите количество столбцов первой матрицы: ");
         // Читаем стркоу
         getCommand(data);
         // Если в ней нет команды выхода, то продолжаем
@@ -198,30 +219,35 @@ int powerStart(void) {
         if (fsizex > 0)
             status = 0;
         else
-            printf("Некорректные данные...\n");
+            fprintf(stdout, "Некорректные данные...\n");
     } while (status);
 
     firstMatrix = (double**) malloc( fsizey * sizeof(double *));
     secondMatrix = (double**) malloc( ssizey * sizeof(double *));
-
-    if ( firstMatrix == NULL || secondMatrix == NULL ) {
-        printf("Что-то пошло не так\n");
-        return -1;
+    // Проверка аллоцирования
+    if (firstMatrix == NULL || secondMatrix == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
     }
 
     for (int i = 0; i < fsizey; i++) {
         // Создаём столбцы для каждой строки
 		firstMatrix[i] = (double*)malloc(fsizex * sizeof(double));
+        // Проверка аллоцирования
+        if (firstMatrix[i] == NULL) {
+            fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+            exit(-1);
+        }
         // Для красивого ввода
         printf(" ");
         // Читаем данные
-        int stat = getOpredelitelLine(data, firstMatrix, i, fsizex);
+        int stat = getDetLine(data, firstMatrix, i, fsizex);
         // Если не введена команда выхода,
-        if (stat == 3) 
+        if (stat == 2) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1 || stat == 4) {
-            printf("Некорректные данные...\n");
+        else if (stat == 1 || stat == 3) {
+            fprintf(stdout, "Некорректные данные...\n");
             i--;
         }
 	}
@@ -229,11 +255,9 @@ int powerStart(void) {
     // вторая матрица
 
     status = 1;
-    free(data);
-    data = (char *) malloc(sizeof(char));
 
     do {
-        printf("Введите количество строк второй матрицы: ");
+        fprintf(stdout, "Введите количество строк второй матрицы: ");
         // Читаем стркоу
         getCommand(data);
         // Если в ней нет команды выхода, то продолжаем
@@ -245,15 +269,13 @@ int powerStart(void) {
         if (ssizey > 0)
             status = 0;
         else
-            printf("Некорректные данные...\n");
+            fprintf(stdout, "Некорректные данные...\n");
     } while (status);
 
     status = 1;
-    free(data);
-    data = (char *) malloc(sizeof(char));
     
     do {
-        printf("Введите количество столбцов второй матрицы: ");
+        fprintf(stdout, "Введите количество столбцов второй матрицы: ");
         // Читаем стркоу
         getCommand(data);
         // Если в ней нет команды выхода, то продолжаем
@@ -265,24 +287,28 @@ int powerStart(void) {
         if (ssizex > 0)
             status = 0;
         else
-            printf("Некорректные данные...\n");
+            fprintf(stdout, "Некорректные данные...\n");
     } while (status);
 
-    printf("Введите элементы второй матрицы:\n");
+    fprintf(stdout, "Введите элементы второй матрицы:\n");
 
     for (int i = 0; i < ssizey; i++) {
         // Создаём столбцы для каждой строки
 		secondMatrix[i] = (double*)malloc(ssizex * sizeof(double));
+        if (secondMatrix[i] == NULL) {
+            fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+            exit(-1);
+        }
         // Для красивого ввода
         printf(" ");
         // Читаем данные
-        int stat = getOpredelitelLine(data, secondMatrix, i, ssizex);
+        int stat = getDetLine(data, secondMatrix, i, ssizex);
         // Если не введена команда выхода,
-        if (stat == 3) 
+        if (stat == 2) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1 || stat == 4) {
-            printf("Некорректные данные...\n");
+        else if (stat == 1 || stat == 3) {
+            fprintf(stdout, "Некорректные данные...\n");
             i--;
         }
 	}
@@ -290,14 +316,14 @@ int powerStart(void) {
     double **matrix = power(firstMatrix, fsizey, fsizex, secondMatrix, ssizey, ssizex);
     
     if (matrix) {
-        printf("Результат произведения:\n\n");
+        fprintf(stdout, "Результат произведения:\n\n");
         for ( int i = 0; i < fsizey; i++ ) {
-            printf("\t");
+            fprintf(stdout, "\t");
             for ( int j = 0; j < ssizex; j++ )
-                printf("%.3lf ", matrix[i][j]); 
-            printf("\n");
+                fprintf(stdout, "%.3lf ", matrix[i][j]); 
+            fprintf(stdout, "\n");
         }
-        printf("\n");
+        fprintf(stdout, "\n");
     }
 
     for (int i = 0; i < fsizey; i++)
@@ -318,9 +344,13 @@ int rangStart(void) {
         status = 1;
     char *data = (char *) malloc(sizeof(char));
 	double** matrix;
+    if (data == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
 
 	do {
-        printf("Введите количество строк матрицы, для нахождения её ранга: ");
+        fprintf(stdout, "Введите количество строк матрицы, для нахождения её ранга: ");
 		// Читаем стркоу
         getCommand(data);
         // Если в ней нет команды выхода, то продолжаем
@@ -331,17 +361,15 @@ int rangStart(void) {
             if (amountY > 0)
                 status = 0;
             else
-                printf("Некорректные данные...\n");
+                fprintf(stdout, "Некорректные данные...\n");
         else
-            printf("Некорректные данные...\n");
+            fprintf(stdout, "Некорректные данные...\n");
 	} while (status);
 
     status = 1;
-    free(data);
-    data = (char *) malloc(sizeof(char));
 
     do {
-        printf("Введите количество столбцов матрицы, для нахождения её ранга: ");
+        fprintf(stdout, "Введите количество столбцов матрицы, для нахождения её ранга: ");
 		// Читаем стркоу
         getCommand(data);
         // Если в ней нет команды выхода, то продолжаем
@@ -352,35 +380,42 @@ int rangStart(void) {
             if (amountX > 0)
                 status = 0;
             else
-                printf("Некорректные данные...\n");
+                fprintf(stdout, "Некорректные данные...\n");
         else
-            printf("Некорректные данные...\n");
+            fprintf(stdout, "Некорректные данные...\n");
 	} while (status);
 
-    free(data);
-    data = (char *) malloc(sizeof(char));
-    matrix = (double **) malloc(amountY * sizeof(double *));
+    matrix = (double**)malloc(amountY * sizeof(double*));
+    if (matrix == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
     
-    printf("Введите элементы матрицы:\n");
+    fprintf(stdout, "Введите элементы матрицы:\n");
 	for (int i = 0; i < amountY; i++) {
         // Создаём столбцы для каждой строки
 		matrix[i] = (double*)malloc(amountX * sizeof(double));
+        // Проверка аллоцирования
+        if (matrix[i] == NULL) {
+            fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+            exit(-1);
+        }
         // Для красивого ввода
-        printf(" ");
+        fprintf(stdout, " ");
         // Читаем данные
-        int stat = getOpredelitelLine(data, matrix, i, amountX);
+        int stat = getDetLine(data, matrix, i, amountX);
         // Если не введена команда выхода,
-        if (stat == 3) 
+        if (stat == 2) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1 || stat == 4) {
-            printf("Некорректные данные...\n");
+        else if (stat == 1 || stat == 3) {
+            fprintf(stdout, "Некорректные данные...\n");
             i--;
         }
 	}
 
     int rang = findRang(matrix, amountY, amountX);
-    printf("Ранг матрицы равен %d\n", rang);
+    fprintf(stdout, "Ранг матрицы равен %d\n", rang);
 
     for (int i = 0; i < amountY; i++)
 		free(matrix[i]);
@@ -399,6 +434,11 @@ int inverse(void) {
     double det = 0.;
     double** matrix;
     char *data = (char *) malloc(sizeof(char));
+    // Проверка аллоцирования
+    if (data == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
     // Читаем порядок матрицы
 	do {
         // Просим ввести порядок матрицы
@@ -410,20 +450,21 @@ int inverse(void) {
             return 0;
         // Проверяем на корректность входные данные
         if ( checkString(data, &amount) ) {
-            if (amount <= 0)
-                printf("Некорректные данные...\n");
+            if (amount <= 1)
+                fprintf(stdout, "Некорректные данные...\n");
             else 
                 status = 0;
         } else 
-            printf("Некорректые данные...\n");
+            fprintf(stdout, "Некорректые данные...\n");
 	} while (status);
 
     // Создаём первое измерение матрицы
 	matrix = (double**)malloc(amount * sizeof(double*));
-    // Освобождаем память для строки
-    free(data);
-    // И создаём новую строку пользователя
-    data = (char *) malloc(sizeof(char));
+    // Проверка аллоцирования
+    if (matrix == NULL) {
+        fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
 
     // Просим ввести саму матрицу
 	fprintf(stdout, "Введите элементы матрицы:\n");
@@ -432,38 +473,42 @@ int inverse(void) {
 	for (int i = 0; i < amount; i++) {
         // Создаём столбцы для каждой строки
 		matrix[i] = (double*)malloc(amount * sizeof(double));
+        // Проверка аллоцирования
+        if (matrix[i] == NULL) {
+            fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+            exit(-1);
+        }
         // Для красивого ввода
         printf(" ");
         // Читаем данные
-        int stat = getOpredelitelLine(data, matrix, i, amount);
+        int stat = getDetLine(data, matrix, i, amount);
         // Если не введена команда выхода,
-        if (stat == 3) 
+        if (stat == 2) 
             return 0;
         // Проверяем на корректность
-        else if (stat == 1 || stat == 4) {
-            printf("Некорректные данные...\n");
+        else if (stat == 1 || stat == 3) {
+            fprintf(stdout, "Некорректные данные...\n");
             i--;
         }
 	}
     double **result = findInverse(matrix, amount, &det);
     if (det != 0.0) {
         if (result) {
-            printf("Обратная матрица:\n\n");
+            fprintf(stdout, "Обратная матрица:\n\n");
             for ( int i = 0; i < amount; i++ ) {
-                    printf("\t|   ");
+                fprintf(stdout, "\t|   ");
                 for ( int j = 0; j < amount; j++ )
-                    printf("%7.3lf ", result[i][j]); 
-                printf("\t|");
+                    fprintf(stdout, "%7.3lf ", result[i][j]); 
+                fprintf(stdout, "\t|");
                 if ( i == amount / 2)
-                    printf(" * ( 1 / %4.3lf )\n", det);
+                    fprintf(stdout, " * ( 1 / %4.3lf )\n", det);
                 else
-                    printf("\n");
+                    fprintf(stdout, "\n");
             }
-            printf("\n");
+            fprintf(stdout, "\n");
         }
-    } else {
-        printf("Для этой матрицы не существует обратной\n");
-    }
+    } else 
+       fprintf(stdout, "Для этой матрицы не существует обратной\n");
 
     for (int i = 0; i < amount; i++) {
         free(result[i]);
@@ -471,6 +516,7 @@ int inverse(void) {
     }
     free(result);
     free(matrix);
+
     free(data);
 
     return 0;

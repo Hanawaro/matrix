@@ -6,7 +6,7 @@
 
 // Возвращает определитель матрицы matrix
 // Если результат -1 - то что-то пошло не так
-double findOpedelitel(double **matrix, int size) {
+double findDet(double **matrix, int size) {
 	// Проверяем корректность порядка матрицы
 	if (size < 1) 
 		return -1;
@@ -73,11 +73,11 @@ double findOpedelitel(double **matrix, int size) {
 			// Возвращаемся на первый элемент матрицы меньшего порядка (минора)
 			aI = 0;
 			aJ = 0;
-			// (-1)^(i+0) * findOpredelitel(минора)
+			// (-1)^(i+0) * findDet(минора)
 			if ( i % 2 == 0 )
-				opredelitel += matrix[0][i] * findOpedelitel(array, size - 1);
+				opredelitel += matrix[0][i] * findDet(array, size - 1);
 			else 
-				opredelitel -= matrix[0][i] * findOpedelitel(array, size - 1);
+				opredelitel -= matrix[0][i] * findDet(array, size - 1);
 		}
 		// Освобождаем память
 		for (int i = 0; i < size - 1; i++)
@@ -217,7 +217,7 @@ double** findInverse(double **matrix, int amount, double *det) {
 	for (int i = 0; i < amount; i++)
 		result[i] = (double *) malloc(amount*sizeof(double));
 
-	*det = findOpedelitel(matrix, amount);
+	*det = findDet(matrix, amount);
 	if (*det == 0.0)
 		return NULL;
 	else {
@@ -245,9 +245,9 @@ double** findInverse(double **matrix, int amount, double *det) {
 				tmpI = 0;
 				tmpJ = 0;
 				if ((i+j)%2 == 0)
-					result[j][i] = findOpedelitel(tmp, amount-1);
+					result[j][i] = findDet(tmp, amount-1);
 				else
-					result[j][i] = -findOpedelitel(tmp, amount-1);
+					result[j][i] = -findDet(tmp, amount-1);
 			}
 		}
 	}

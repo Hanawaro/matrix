@@ -24,7 +24,7 @@ int getCommand(char *string) {
     }
 }
 // Получить данные для i-ой строки матрицы matrix
-int getOpredelitelLine(char * line, double **matrix, int i, int amountOfElements) {
+int getDetLine(char * line, double **matrix, int i, int amountOfElements) {
     int N = 0, 
         statusOfNumber = 0,
         powerF = 1,
@@ -38,10 +38,10 @@ int getOpredelitelLine(char * line, double **matrix, int i, int amountOfElements
     // Получаем строку пользователя
     getCommand(line);
     if (strlen(line) == 0)
-        return 4;
+        return 3;
     // Проверяем, нет ли команды выхода
     if (!strcmp(line, C_EXIT))
-        return 3;
+        return 2;
     // Начинаем считывание
     while ( line[N] != '\0') {
         // Если цифра 0-9 и не было ещё точки, то добавляем к tmp элементу (до точки)
