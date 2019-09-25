@@ -13,6 +13,7 @@
 #define C_POWER "pow"
 #define C_RANG "rang"
 #define C_EXIT "shutdown"
+#define C_INVERSE "inverse"
 
 // Команды для подконсольных приложений
 #define FC_EXIT "exit"
@@ -22,6 +23,7 @@ void helpShow(void);
 int opredelitelStart(void);
 int powerStart(void);
 int rangStart(void);
+int inverse(void);
 
 // Мейн функция
 int main(void) {
@@ -62,10 +64,14 @@ int main(void) {
         // Введена команда нахождения ранга матрицы
         else if (!strcmp(command, C_RANG))
             rangStart();
+        // Введена команда нахождения обратной матрицы
+        else if (!strcmp(command, C_INVERSE)) {
+            inverse();
         // Введена неизвестная команда
-        else
+        } else
             fprintf(stdout, "Неизвестная комманда\nВведите help, чтобы увидеть список команд\n");
     } while (status);
+    fprintf(stdout, "Спасибо за использование программы.\n");
     // Освобождаем память
     free(command);
     // Завершаем программу
@@ -155,14 +161,9 @@ int powerStart(void) {
         ssizey = 0, 
         ssizex = 0, 
         status = 1;
-    double **firstMatrix = (double**) malloc( fsizey * sizeof(double *));
-    double **secondMatrix = (double**) malloc( ssizey * sizeof(double *));
+    double **firstMatrix;
+    double **secondMatrix;
     char *data = (char *) malloc(sizeof(char));
-    
-    if ( firstMatrix == NULL || secondMatrix == NULL ) {
-        printf("Что-то пошло не так\n");
-        return -1;
-    }
 
     do {
         printf("Введите количество строк первой матрицы: ");
@@ -199,6 +200,14 @@ int powerStart(void) {
         else
             printf("Некорректные данные...\n");
     } while (status);
+
+    firstMatrix = (double**) malloc( fsizey * sizeof(double *));
+    secondMatrix = (double**) malloc( ssizey * sizeof(double *));
+
+    if ( firstMatrix == NULL || secondMatrix == NULL ) {
+        printf("Что-то пошло не так\n");
+        return -1;
+    }
 
     for (int i = 0; i < fsizey; i++) {
         // Создаём столбцы для каждой строки
@@ -288,9 +297,8 @@ int powerStart(void) {
                 printf("%.3lf ", matrix[i][j]); 
             printf("\n");
         }
-        printf("\nСпасибо за использование программы.\n");
-    } else 
-        printf("Некорректные размеры матриц\n");
+        printf("\n");
+    }
 
     for (int i = 0; i < fsizey; i++)
         free(firstMatrix[i]);
@@ -379,4 +387,91 @@ int rangStart(void) {
 	free(matrix);
     free(data);
 	return 0;
+}
+
+int inverse(void) {
+    // amount - порядок матрицы
+    // status - флаг для ввода
+    // matrix - сама матрица
+    // data - строка ввода пользователя
+    int amount = 0, 
+        status = 1;
+    double det = 0.;
+    double** matrix;
+    char *data = (char *) malloc(sizeof(char));
+    // Читаем порядок матрицы
+	do {
+        // Просим ввести порядок матрицы
+	    fprintf(stdout, "Введите порядок матрицы, для нахождения обратной ей матрицы: ");
+        // Читаем стркоу
+        getCommand(data);
+        // Если в ней нет команды выхода, то продолжаем
+        if (!strcmp(data, FC_EXIT))
+            return 0;
+        // Проверяем на корректность входные данные
+        if ( checkString(data, &amount) ) {
+            if (amount <= 0)
+                printf("Некорректные данные...\n");
+            else 
+                status = 0;
+        } else 
+            printf("Некорректые данные...\n");
+	} while (status);
+
+    // Создаём первое измерение матрицы
+	matrix = (double**)malloc(amount * sizeof(double*));
+    // Освобождаем память для строки
+    free(data);
+    // И создаём новую строку пользователя
+    data = (char *) malloc(sizeof(char));
+
+    // Просим ввести саму матрицу
+	fprintf(stdout, "Введите элементы матрицы:\n");
+    // Читаем матрицу
+    // Проходиммя по всем строкам
+	for (int i = 0; i < amount; i++) {
+        // Создаём столбцы для каждой строки
+		matrix[i] = (double*)malloc(amount * sizeof(double));
+        // Для красивого ввода
+        printf(" ");
+        // Читаем данные
+        int stat = getOpredelitelLine(data, matrix, i, amount);
+        // Если не введена команда выхода,
+        if (stat == 3) 
+            return 0;
+        // Проверяем на корректность
+        else if (stat == 1 || stat == 4) {
+            printf("Некорректные данные...\n");
+            i--;
+        }
+	}
+    double **result = findInverse(matrix, amount, &det);
+    if (det != 0.0) {
+        if (result) {
+            printf("Обратная матрица:\n\n");
+            for ( int i = 0; i < amount; i++ ) {
+                    printf("\t|   ");
+                for ( int j = 0; j < amount; j++ )
+                    printf("%7.3lf ", result[i][j]); 
+                printf("\t|");
+                if ( i == amount / 2)
+                    printf(" * ( 1 / %4.3lf )\n", det);
+                else
+                    printf("\n");
+            }
+            printf("\n");
+        }
+    } else {
+        printf("Для этой матрицы не существует обратной\n");
+    }
+
+    for (int i = 0; i < amount; i++) {
+        free(result[i]);
+        free(matrix[i]);
+    }
+    free(result);
+    free(matrix);
+    free(data);
+
+    return 0;
 }

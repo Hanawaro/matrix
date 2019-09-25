@@ -206,3 +206,53 @@ double** power(double **firstMatrix,int firstSizeY, int firstSizeX, double **sec
 	// Возвращаем 0
 	return 0;
 }
+
+double** findInverse(double **matrix, int amount, double *det) {
+	int tmpI = 0,
+		tmpJ = 0,
+		status = 0;
+	double **tmp;
+	double **result = (double **) malloc(amount*sizeof(double *));
+
+	for (int i = 0; i < amount; i++)
+		result[i] = (double *) malloc(amount*sizeof(double));
+
+	*det = findOpedelitel(matrix, amount);
+	if (*det == 0.0)
+		return NULL;
+	else {
+		tmp = (double **) malloc((amount-1)*sizeof(double *));
+		for (int i = 0; i < (amount - 1); i++)
+			tmp[i] = (double *) malloc((amount-1)*sizeof(double));
+
+		for (int i = 0; i < amount; i++) {
+			for (int j = 0; j < amount; j++) {
+				tmpI = 0;
+				for (int k = 0; k < amount; k++) {
+					for(int l = 0; l < amount; l++) {
+						if ( i != k && j != l) {
+							tmp[tmpI][tmpJ] = matrix[k][l];
+							tmpJ++;
+							status = 1;
+						}
+					}
+					if (status) {
+						tmpJ = 0;
+						tmpI++;
+						status = 0;
+					}
+				}
+				tmpI = 0;
+				tmpJ = 0;
+				if ((i+j)%2 == 0)
+					result[j][i] = findOpedelitel(tmp, amount-1);
+				else
+					result[j][i] = -findOpedelitel(tmp, amount-1);
+			}
+		}
+	}
+	for (int i = 0; i < (amount - 1); i++)
+		free(tmp[i]);
+	free(tmp);
+	return result;
+}
