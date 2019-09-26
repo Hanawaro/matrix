@@ -206,44 +206,68 @@ double** power(double **firstMatrix,int firstSizeY, int firstSizeX, double **sec
 	// Возвращаем 0
 	return 0;
 }
-
+// Нахождение обратной матрицы
 double** findInverse(double **matrix, int amount, double *det) {
+	// tmpI - строка минора
+	// tmpJ - столбец минора
+	// status - для минора, чтобы спокойно ходить по элементам минора
+	// tmp - минор
+	// result - обратная матрица
 	int tmpI = 0,
 		tmpJ = 0,
 		status = 0;
-	double **tmp;
+	double **tmp = (double **) malloc((amount-1)*sizeof(double *));
 	double **result = (double **) malloc(amount*sizeof(double *));
-
-	for (int i = 0; i < amount; i++)
+	if (tmp == NULL || result == NULL) {
+		fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        exit(-1);
+    }
+	// Добавляем второе измерение для обратной матрицы
+	for (int i = 0; i < amount; i++) {
 		result[i] = (double *) malloc(amount*sizeof(double));
-
+		if (result[i] == NULL) {
+			fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        	exit(-1);
+		}
+	}
+	// Добавляем второе измерения для минора
+	for (int i = 0; i < (amount - 1); i++) {
+		tmp[i] = (double *) malloc((amount-1)*sizeof(double));
+		if (tmp[i] == NULL) {
+			fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
+        	exit(-1);
+		}
+	}
+	// Определитель матрицы
 	*det = findDet(matrix, amount);
+	// Если дерерминант равен нулю, то обратной не существует
 	if (*det == 0.0)
 		return NULL;
+	// Находим обратную
 	else {
-		tmp = (double **) malloc((amount-1)*sizeof(double *));
-		for (int i = 0; i < (amount - 1); i++)
-			tmp[i] = (double *) malloc((amount-1)*sizeof(double));
-
 		for (int i = 0; i < amount; i++) {
 			for (int j = 0; j < amount; j++) {
-				tmpI = 0;
 				for (int k = 0; k < amount; k++) {
 					for(int l = 0; l < amount; l++) {
 						if ( i != k && j != l) {
+							// Записываем минор
 							tmp[tmpI][tmpJ] = matrix[k][l];
+							// Увеличиваем столбец
 							tmpJ++;
 							status = 1;
 						}
 					}
+					// Увеличиваем строку, обнуляем столбец
 					if (status) {
 						tmpJ = 0;
 						tmpI++;
 						status = 0;
 					}
 				}
+				// Возвращаемся в (0, 0) минора
 				tmpI = 0;
 				tmpJ = 0;
+				// Находим алгебраическое дополнение
 				if ((i+j)%2 == 0)
 					result[j][i] = findDet(tmp, amount-1);
 				else
@@ -251,6 +275,7 @@ double** findInverse(double **matrix, int amount, double *det) {
 			}
 		}
 	}
+	// Освобождаем память и возвращаем результат
 	for (int i = 0; i < (amount - 1); i++)
 		free(tmp[i]);
 	free(tmp);

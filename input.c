@@ -25,6 +25,13 @@ int getCommand(char *string) {
 }
 // Получить данные для i-ой строки матрицы matrix
 int getDetLine(char * line, double **matrix, int i, int amountOfElements) {
+    // N - номер элемента матрицы i-ой строки
+    // powerF - размер целой части, powerS - размер дробной части
+    // firstPartOfNumber - целая часть, secondPartOfNumber - дробная часть
+    // counter - номер элемента (вывод)
+    // j - номер элемента (матрица)
+    // point - точка в числе
+    // sign - знак числа
     int N = 0, 
         statusOfNumber = 0,
         powerF = 1,
@@ -119,30 +126,42 @@ int getDetLine(char * line, double **matrix, int i, int amountOfElements) {
     if (j <= amountOfElements)
         matrix[i][j] = sign * ( (double) firstPartOfNumber + ((double) secondPartOfNumber / (double) powerS) );
     counter++;
+    // Проверяем корректность вывода
     if (counter < amountOfElements)
         return 1;
     else 
         return 0;
 }
+
 // Получить число number из строки пользователя
 int checkString(char *string, int* number) {
+    // N - для букв в строке string
+    // power - размер числа
+    // num - само число
+    // status - флаг, на существование числа в строке
+    // sign - знак числа
     int N = 0,
         power = 1,
         num = 0,
         status = 0,
         sign = 1;
+    // Разбираем строку, пока нет конца строки (конец точно есть, т.к. строка приходит из getCommand())
     while (string[N] != '\0') {
+        // Если есть цифра, то записываем в num
         if (string[N] >= '0' && string[N] <= '9') {
             num += power*((int) (string[N] - '0'));
             power *= 10;
             status = 1;
+        // Проверка знака
         } else if (string[N] == '-')
             sign = -1;
+        // Если другой символ - игнорим
         else
             break;
+        // Увеличиваем индекс буквы строки
         N++;
     }
-
+    // Переворачиваем число
     int tmp = num;
     power /= 10;
     num = 0;
@@ -152,16 +171,22 @@ int checkString(char *string, int* number) {
         tmp /= 10;
         power /= 10;
     }
-
-    *number = sign*num;
-    
-    if (status)
+    // Если число существует, то всё хорошо
+    if (status) {
+        *number = sign*num;
         return 1;
-    else 
+    } else 
         return 0;
 }
+
 // Получить число (double) number из строки пользователя
 int checkStringDouble(char *string, double *number) {
+    // N - индентификатор символа в строке
+    // powerF - размер целой части, powerS - размер дробной части
+    // firstPartaOfNumber - целая часть, secondPartOfNumber - дробная часть
+    // point - флаг на точку
+    // status - получено ли число
+    // sign - знак
     int N = 0,
         powerF = 1,
         powerS = 1,
@@ -170,24 +195,30 @@ int checkStringDouble(char *string, double *number) {
         secondPartOfNumber = 0,
         status = 0,
         sign = 1;
-
+    // Читаем каждый элемент строки
     while (string[N] != '\0') {
+        // Если цифра в целой части, то записываем в firstPartOfNumber
         if (string[N] >= '0' && string[N] <= '9' && !point) {
             firstPartOfNumber += powerF*((int) (string[N] - '0'));
             powerF *= 10;
             status = 1;
+        // Если цифра в целой части, то записываем в firstPartOfNumber
         } else if (string[N] >= '0' && string[N] <= '9' && point) {
             secondPartOfNumber += powerS*((int) (string[N] - '0'));
             powerS *= 10;
+        // Если точка, поднимаем флаг
         } else if (string[N] == '.')
             point = 1;
+        // Если отрицательно, поднимаем флаг
         else if (string[N] == '-')
             sign = -1;
+        // Игнорируем другие символы
         else
             break;
+        // Увеличиваем индекс символа строки
         N++;
     }
-
+    // Переворачиваем целую часть
     int tmp = firstPartOfNumber;
     powerF /= 10;
     firstPartOfNumber = 0;
@@ -197,7 +228,7 @@ int checkStringDouble(char *string, double *number) {
         tmp /= 10;
         powerF /= 10;
     }
-
+    // Переворачиваем дробную часть
     tmp = secondPartOfNumber;
     powerF = powerS / 10;
     secondPartOfNumber = 0;
@@ -207,7 +238,7 @@ int checkStringDouble(char *string, double *number) {
         tmp /= 10;
         powerF /= 10;
     }
-
+    // Если число существует, то всё хорошо
     if (status) {
         *number = sign * ( (double) firstPartOfNumber + ((double) secondPartOfNumber / (double) powerS) );
         return 1;
