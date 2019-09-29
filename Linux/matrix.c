@@ -1,283 +1,218 @@
-// Подключаем стандартные библиотке
 #include <stdio.h>
 #include <stdlib.h>
-// Подключение заголовочных файлов matrix
 #include "matrix.h"
 
-// Возвращает определитель матрицы matrix
-// Если результат -1 - то что-то пошло не так
-double findDet(double **matrix, int size) {
-	// Проверяем корректность порядка матрицы
-	if (size < 1) 
+int findDet(double **matrix, int size, double *result) {
+	if (matrix == NULL)
 		return -1;
-	// Считаем ручками определитель матрицы 1-ого порядка
-	else if (size == 1) 
-		return matrix[0][0];
-	// Считаем ручками определитель матрицы 2-ого порядка
-	else if (size == 2) 
-		return matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0];
-	// Считаем ручками определитель матрицы 3-ого порядка
-	else if ( size == 3 ) 
-		return matrix[0][0]*matrix[1][1]*matrix[2][2] + matrix[0][2]*matrix[1][0]*matrix[2][1] + matrix[0][1]*matrix[1][2]*matrix[2][0] -
+	if (size < 1) 
+		return -2;
+	if (result == NULL)
+		return -3;
+	if (size == 1) {
+		*result = matrix[0][0];
+		return 0;
+	} else if (size == 2) {
+		*result = matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0];
+		return 0;
+	} else if ( size == 3 ) {
+		for (int i = 0; i < size; i++)
+			if (matrix[i] == NULL)
+				return -1;
+		*result = matrix[0][0]*matrix[1][1]*matrix[2][2] + matrix[0][2]*matrix[1][0]*matrix[2][1] + matrix[0][1]*matrix[1][2]*matrix[2][0] -
 			matrix[0][2]*matrix[1][1]*matrix[2][0] - matrix[0][1]*matrix[1][0]*matrix[2][2] - matrix[0][0]*matrix[1][2]*matrix[2][1];
-	// Считаем рекурсией определитель матрицы n-ого порядка
-	else {
-		// opredelitel - само значение определителя
-		// aI - номер строки минора
-		// aJ - номер столбца минора
+		return 0;
+	} else {
+		for (int i = 0; i < size; i++)
+			if (matrix[i] == NULL)
+				return -1;
 		double opredelitel = 0; 
 		int aI = 0, aJ = 0;
-		// Создаём матрицу меньшего порядка для минора 
 		double **array = (double**)malloc( (size - 1) * sizeof(double*));
-		// Проверяем дала ли система память под массив (матрицу)
-		if ( array == NULL )
-			return -1;
-		// Перебираем столбцы и находим миноры для первых элементов ( i - номер столбца )
+		if (array == NULL)
+			return -4;
 		for (int i = 0; i < size - 1; i++) {
-			// Добавляем второе измерение для матрицы меньшего порядка
 			array[i] = (double*)malloc((size - 1) * sizeof(double));
-			// Проверяем дала ли система память под второе измерение массива (матрицы)
 			if ( array[i] == NULL )
-				return -1;
-			// Перебираем строки ( j - номре строки)
+				return -4;
 			for (int j = 0; j < size - 1; j++)
-				// обнуляем элементы
 				array[i][j] = 0;
 		}
 
-		// ОСНОВНАЯ ЧАСТЬ КОДА
-		
-		// Перебираем элементы первой строки начальной матрицы (91, 02, ..., 0i)
-		// Вычёркиваем первую строку
 		for (int i = 0; i < size; i++) {
-			// Перебираем строки начальной матрицы ( j - номер строки )
 			for (int j = 1; j < size; j++) {
-				// Перебираем элементы строк начальной матрицы по столбцам ( k - номер столбца )
 				for (int k = 0; k < size; k++) {
-					// Вычёркиваем столбец по вертикали
 					if (i != k) {
-						// Проверяем, чтобы не было переполнения
 						if (aJ < size-1 && aI < size-1) {
-							// Записываем jk-тый элемент в матрицу меньшего порядка aIaJ
 							array[aI][aJ] = matrix[j][k];
-							// Увеличиваем столбец для матрицы меньшего порядка (минора)
 							aJ++;
 						}
 					}
 				}
-				// Увеличиваем строку для матрицы меньшего порядка (минора)
 				aI++;
-				// Обнуляем столбец для матрицы меньшего порядка (минора)
 				aJ = 0;
 			}
-			// Возвращаемся на первый элемент матрицы меньшего порядка (минора)
 			aI = 0;
 			aJ = 0;
-			// (-1)^(i+0) * findDet(минора)
+			double det;
+			findDet(array, size - 1, &det);
 			if ( i % 2 == 0 )
-				opredelitel += matrix[0][i] * findDet(array, size - 1);
+				*result += matrix[0][i] * det;
 			else 
-				opredelitel -= matrix[0][i] * findDet(array, size - 1);
+				*result -= matrix[0][i] * det;
 		}
-		// Освобождаем память
 		for (int i = 0; i < size - 1; i++)
 			free(array[i]);
 		free(array);
-		// Возвращаем значение
-		return opredelitel;
+		return 0;
 	}
-	// Что-то пошло не так
-	return -1;
+	return -5;
 }
 
-// Возвращает ранг матрицы matrix
-// Если результат -1 - то что-то пошло не так
-int findRang(double **matrix, int sizeY, int sizeX) {
-	// Смотрим, корректные ли входные данные
-    if (sizeY <= 0 || sizeX <= 0)
+int findRang(double **matrix, int sizeY, int sizeX, int *rang) {
+	if (matrix == NULL)
 		return -1;
-	// Если в матрице всего одна строка, считаем ранг ручками
+    if (sizeY <= 0 || sizeX <= 0)
+		return -2;
 	else if (sizeY == 1) {
-		// flag - показывает, встретился ли нам хоть 1 НЕ нуль
+		for (int i = 0; i < sizeY; i++)
+			if (matrix[i] == NULL)
+				return -1;
         int flag = 1;
         for ( int i = 0; i < sizeX; i++)
             if ( matrix[sizeY - 1][i] != 0.0)
                 flag = 0;
-		// Если были одни лишь нули, то ранг равен 0
-		if ( flag )
+		if (flag) {
+			*rang = 0;
 			return 0;
-		else 
-			// Иначе равен 1 
-			return 1;
+		} else {
+			*rang = 1;
+			return 0;
+		}
 	} else {
-		// Если матрица не с одной строкой, то
-		// iteration - количество операций с одной строкой 
-		// newI - индекс строки, с коротой работает наша "последняя" строка
-		// lastLine - индекс строки, с которой мы работаем
-		// vertical - индекс столбца, в котором мы пытаемся получить нуль в рабочей строке
         int iteration = 1, newI = 0, lastLine = 1, vertical = 0;
-		// Проходимся по всем строкам, с которыми мы должны работать
 		for (int i = 0; i < sizeY - 1; i++) {
-			// Делаем нужное количество операций с рабочей строкой
 			for (int j = 1; j <= iteration; j++) {
-				// Запоминаем на что нужно умножить рабочую строку (forSecond) и
-				// на что нужно умножить строку, которая работает с нашей рабочей строкой (forFirst)
                 double forFirst = matrix[lastLine][vertical],
                        forSecond = matrix[newI][vertical];
-				// Вычитаем эти 2 строки друг из друга и записываем результат в рабочую строку
                 for (int k = 0; k < sizeX; k++)
                     matrix[lastLine][k] = matrix[newI][k]*forFirst - matrix[lastLine][k]*forSecond; 
-				// Увеличиваем индекс столбца (по ступенькам)
                 vertical++;
-				// Увеличиваем индекс строки, которая работает с нашей рабочей строкой
                 newI++;
-            }
-			// Увеличиваем индекс рабочей строки
+			}
             lastLine++;
-			// Увеличиваем количество итераций с рабочей строкой
             iteration++;
-			// Обнуляем индексы столбца,в котором мы получаем нуль, и строки, которая работает с рабочей строкой
             vertical = 0;
             newI = 0;
 		}
-		// Смотрим, сколько строк с нулями
-		// flag - показывает, встретился ли нам хоть 1 НЕ нуль
-		// counter - считает количество нулевых строк
+
         int flag = 1, counter = 0;
-		// Проходимся по строкам матрицы
         for ( int i = 0; i < sizeY; i++) {
-			// Проходимся по столбцам матрицы
             for ( int k = 0; k < sizeX; k++) {
-				// Если есть НЕ нуль, то убираем флаг
                 if ( matrix[i][k] != 0.0 )
                     flag = 0;
             }
-			// Если нулевая строка
-            if ( flag ) 
-				// Обновляем счётчик
+            if (flag) 
                 counter++;
-			// Снова поднимаем флаг, для следующей строки
             flag = 1;
         }
-		// Возвращаем ранг матрицы
-        return (sizeY - counter);
+		*rang = sizeY - counter;
+        return 0;
 	}
-	// Что-то пошло не так
-	return -1;
+	return -3;
 }
 
-// Возвращает матрицу - результат произведения
-// Если результат 0 - то что-то пошло не так
-double** power(double **firstMatrix,int firstSizeY, int firstSizeX, double **secondMatrix,int secondSizeY, int secondSizeX) {
-	// Смотрим, можно ли вообще найти произведение этих матриц
-	if ( firstSizeX == secondSizeY) {
-		// Создаём новую матрицу
-		double **matrix = (double **) malloc(firstSizeY * sizeof(double*));
-		// Проверяем, дала ли система память под новую матрицу
-		if (matrix == NULL)
-			return 0;
-		// Создаём второе измерение матрицы
+int power(double **firstMatrix,int firstSizeY, int firstSizeX, double **secondMatrix,int secondSizeY, int secondSizeX, double ***result) {
+	if (firstMatrix == NULL || secondMatrix == NULL)
+		return -1;
+	if ( firstSizeX == secondSizeY && firstSizeY > 0 && firstSizeX > 0 && secondSizeY > 0 && secondSizeX > 0) {
+		for (int i = 0; i < firstSizeY; i++)
+			if (firstMatrix[i] == NULL)
+				return -1;
+		for (int i = 0; i < secondSizeY; i++)
+			if (secondMatrix[i] == NULL)
+				return -1;
+		*result = (double **) malloc(firstSizeY * sizeof(double*));
+		if (*result == NULL)
+			return -3;
 		for (int i = 0; i < firstSizeY; i++) {
-			matrix[i] = (double *) malloc( secondSizeX * sizeof(double));
-			// Смотрим, дала ли система память под второе измерение матрицы
-			if (matrix[i] == NULL)
-				return 0;
+			(*result)[i] = (double *) malloc( secondSizeX * sizeof(double));
+			if ((*result)[i] == NULL)
+				return -3;
 		}
-		// Обнуляем матрицу
 		for (int i = 0; i < firstSizeY; i++)
 			for (int j = 0; j < secondSizeX; j++)
-				matrix[i][j] = 0.0;
-		// Проходимся по строкам первой матрицы
+				(*result)[i][j] = 0.;
+		
 		for (int i = 0; i < firstSizeY; i++) 
-			// Проходимся по столбцам матриц
 			for (int j = 0; j < firstSizeX; j++) {
-				// Сохраням [i][j] элемент 1 матрицы
 				double tmp = firstMatrix[i][j];
-				// Проходимся по второй матрице
 				for (int k = 0; k < secondSizeX; k++) 
-					matrix[i][k] += tmp * secondMatrix[j][k];
+					(*result)[i][k] += tmp * secondMatrix[j][k];
 			}
-		// Возвращаем указатель на новую матрицу
-		return matrix;
-	} else {
-		// Возвращаем 0
 		return 0;
-	}
-	// Возвращаем 0
-	return 0;
+	} else 
+		return -2;
+	return -4;
 }
-// Нахождение обратной матрицы
-double** findInverse(double **matrix, int amount, double *det) {
-	// tmpI - строка минора
-	// tmpJ - столбец минора
-	// status - для минора, чтобы спокойно ходить по элементам минора
-	// tmp - минор
-	// result - обратная матрица
+
+int findInverse(double **matrix, int amount, double *det, double ***result) {
+	if (amount <= 1)
+		return -1;
 	int tmpI = 0,
 		tmpJ = 0,
 		status = 0;
 	double **tmp = (double **) malloc((amount-1)*sizeof(double *));
-	double **result = (double **) malloc(amount*sizeof(double *));
-	if (tmp == NULL || result == NULL) {
-		fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
-        exit(-1);
-    }
-	// Добавляем второе измерение для обратной матрицы
+	*result = (double **) malloc(amount*sizeof(double *));
+	if (tmp == NULL || result == NULL)
+        return -2;
 	for (int i = 0; i < amount; i++) {
-		result[i] = (double *) malloc(amount*sizeof(double));
-		if (result[i] == NULL) {
-			fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
-        	exit(-1);
-		}
+		(*result)[i] = (double *) malloc(amount*sizeof(double));
+		if ((*result)[i] == NULL)
+        	return -2;
 	}
-	// Добавляем второе измерения для минора
 	for (int i = 0; i < (amount - 1); i++) {
 		tmp[i] = (double *) malloc((amount-1)*sizeof(double));
-		if (tmp[i] == NULL) {
-			fprintf(stdout, "Произошла ошибка аллоцирования памяти\n");
-        	exit(-1);
-		}
+		if (tmp[i] == NULL)
+        	return -2;
 	}
-	// Определитель матрицы
-	*det = findDet(matrix, amount);
-	// Если дерерминант равен нулю, то обратной не существует
+	int flag = findDet(matrix, amount, det);
+	if (flag == -3)
+		return -2;
+	else if (flag == -4)
+		return -4;
 	if (*det == 0.0)
-		return NULL;
-	// Находим обратную
+		return -3;
 	else {
 		for (int i = 0; i < amount; i++) {
 			for (int j = 0; j < amount; j++) {
 				for (int k = 0; k < amount; k++) {
 					for(int l = 0; l < amount; l++) {
 						if ( i != k && j != l) {
-							// Записываем минор
 							tmp[tmpI][tmpJ] = matrix[k][l];
-							// Увеличиваем столбец
 							tmpJ++;
 							status = 1;
 						}
 					}
-					// Увеличиваем строку, обнуляем столбец
 					if (status) {
 						tmpJ = 0;
 						tmpI++;
 						status = 0;
 					}
 				}
-				// Возвращаемся в (0, 0) минора
 				tmpI = 0;
 				tmpJ = 0;
-				// Находим алгебраическое дополнение
+				double detTMP;
+				findDet(tmp, amount-1, &detTMP);
 				if ((i+j)%2 == 0)
-					result[j][i] = findDet(tmp, amount-1);
+					(*result)[j][i] = detTMP;
 				else
-					result[j][i] = -findDet(tmp, amount-1);
+					(*result)[j][i] = -detTMP;
 			}
 		}
 	}
-	// Освобождаем память и возвращаем результат
 	for (int i = 0; i < (amount - 1); i++)
 		free(tmp[i]);
 	free(tmp);
-	return result;
+	return 0;
 }
