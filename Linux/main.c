@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     int workStatus = 1;
     string_t *command = createline();
     do {
-        fprintf(stdout, "~/ ");
+        fprintf(stdout, "\x1b[32m~/ \x1b[0m");
         getcommand(command);
 
         if (!compareline(command, "\0")) {
